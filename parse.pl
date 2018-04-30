@@ -68,7 +68,7 @@ example:example_usage :-
 example:example_usage :-
   % Foo = functor("foo",[prolog_atom("a"),3]),
   phrase(
-    clause(Foo, Body),
+    clause(_Foo, _Body),
     "foo(a, 3) :- bar(15, 33); baz(a,b)."
   ).
 
@@ -114,11 +114,7 @@ example:example_usage(foo, [exclusive(false)]) :-
 % Code
 %
 clause(Head, Body) -->
-  functor_whole(Head),
-  optional_whitespace,
-  ":-",
-  optional_whitespace,
-  clause_body(Body),
+  clause_body(functor(":-", Head, Body)),
   ".".
 
 clause_body(Body) --> clause_body(Body, _P).
