@@ -81,9 +81,8 @@ example:example_usage(foobar, [exclusive(false)]) :-
 
 example:example_usage(eq_body, [exclusive(false)]) :-
   Foo = functor("foo",[functor("a", []),3]),
-  Baz = functor("baz", [functor("a", []), functor("b", [])]),
   phrase(
-    clause(Foo, Baz),
+    clause(Foo, _Body),
     "foo(a, 3) :- 3 = 3, baz(a,b)."
   ).
 
