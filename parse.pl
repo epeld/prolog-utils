@@ -39,37 +39,106 @@ example:example_usage :-
 example:example_usage :-
   phrase(
     (
-      functor("bar",[15,33])
+      functor_parts("bar",[15,33])
     ), "bar(15,33)").
 
 example:example_usage :-
   phrase(
     (
-      functor("foo",[prolog_atom("a"),3])
+      functor_parts("foo",[prolog_atom("a"),3])
     ), "foo(a, 3)").
 
 example:example_usage :-
+  Foo = functor("foo",[prolog_atom("a"),3]),
+  Bar = functor("bar", [15, 33]),
   phrase(
-    clause(functor("foo", [prolog_atom("a"), 3]), functor("bar", [15, 33])),
+    clause(Foo, Bar),
     "foo(a, 3) :- bar(15, 33)."
+  ).
+
+example:example_usage :-
+  Foo = functor("foo",[prolog_atom("a"),3]),
+  Bar = functor("bar", [15, 33]),
+  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  phrase(
+    clause(Foo, (Bar, Baz)),
+    "foo(a, 3) :- bar(15, 33), baz(a,b)."
+  ).
+
+example:example_usage :-
+  Foo = functor("foo",[prolog_atom("a"),3]),
+  Bar = functor("bar", [15, 33]),
+  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  phrase(
+    clause(Foo, (Bar; Baz)),
+    "foo(a, 3) :- bar(15, 33); baz(a,b)."
+  ).
+
+example:example_usage :-
+  Foo = functor("foo",[prolog_atom("a"),3]),
+  Bar = functor("bar", [15, 33]),
+  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  phrase(
+    clause(Foo, (Bar, Baz, Baz)),
+    "foo(a, 3) :- bar(15, 33), baz(a,b), baz(a,b)."
+  ).
+
+example:example_usage :-
+  Foo = functor("foo",[prolog_atom("a"),3]),
+  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  phrase(
+    clause(Foo, ((3 = 3), Baz)),
+    "foo(a, 3) :- 3 = 3, baz(a,b)."
   ).
 
 %
 % Code
 %
 clause(Head, Body) -->
-  functor(Head),
+  functor_whole(Head),
   optional_whitespace,
   ":-",
   optional_whitespace,
-  functor(Body),
+  clause_body(Body, 1200).
+
+clause_body(Body, _Precedence) -->
+  functor_whole(Body),
   optional_whitespace,
   ".".
 
-functor(Name,[]) -->
+clause_body(Compound) -->
+  {
+    functor(Compound, Op, 2),
+    arg(1, Compound, F1),
+    arg(2, Compound, F2)
+  },
+  functor_whole(F1),
+  optional_whitespace,
+  operator(Op),
+  optional_whitespace,
+  clause_body(F2).
+
+operator(Op) -->
+  {
+    operator(OpC),
+    atom_codes(Op, OpC)
+  },
+  OpC.
+
+operator(",").
+operator(";").
+operator("|").
+% operator("*->").
+% operator("-").
+% operator("=").
+
+functor_whole(functor(Name, Args)) -->
+  functor_parts(Name, Args).
+
+functor_parts(Name,[]) -->
   prolog_atom(Name).
 
-functor(Name,Args) -->
+functor_parts(Name,Args) -->
   prolog_atom(Name),
   "(",
   functor_args(Args),
