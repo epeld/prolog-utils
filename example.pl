@@ -104,14 +104,25 @@ print_results(Heading,  Examples) :-
   (
     Examples = [] *-> format("<none>~n") ;
     forall(
-      member(result((Head :- Example), Result), Examples),
+      member(result(Example, Result), Examples),
       (
 	result_summary(Result, Summary),
-	%format("~n% In module '~w'~n:- ~w. % --> ~w~n", [Module, Example, Summary]),
-	format("~n% Example '~w'~n:- ~w. % --> ~w~n", [Head, Example, Summary])
+	format_example(Example, Summary)
       )
     )
   ).
+
+format_example((Head :- _Body), ok) :-
+  format("~n% Example '~w': OK~n", [Head]).
+
+format_example((Head :- (Module:Body)), Other) :-
+  Other \= ok,
+  ( Head = example_usage, Name = anonymous_example ;
+    Head = example_usage(Name) ;
+    Head = example_usage(Name, _Options)
+  ),
+  format("~n% Module ~w: '~w' ~n:- ~w. % --> ~w~n", [Module, Name, Body, Other]).
+
 
 result_summary(error(existence_error(procedure, Clause), Impl), does_not_exist(Clause, Context)) :-
   !,
