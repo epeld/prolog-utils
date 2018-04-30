@@ -74,15 +74,18 @@ usage_example_results(Successes, Failures, Errors) :-
   include(is_result(failed), Results, Failures),
   include(is_result(error), Results, Errors).
 
+
 is_result(ok, result(_, ok(_D))).
 is_result(failed, result(_, failed)).
 is_result(error, result(_, error(_Err, _Err2))).
 
 
-run_case((_Head :- Body), Result) :-
+run_case((Head :- Body), Result) :-
+  case_options(Head, Options),
+  transform_body(Body, Options, Body0),
   catch(
     (
-      call(Body) *->
+      call(Body0) *->
       (
 	!,
 	Result = ok(choicepoints_discarded)
@@ -92,6 +95,18 @@ run_case((_Head :- Body), Result) :-
     Error,
     Result = Error
   ).
+
+
+transform_body(Body, Options, (Body, spy)) :-
+  member(spy, Options),
+  throw(Options).
+
+transform_body(Body, Options, Body) :-
+  \+ member(spy, Options).
+
+case_options(example_usage(_Name, Options), Options).
+case_options(example_usage(_Name), []).
+case_options(example_usage, []).
 
 
 print_results(Heading,  []) :-
