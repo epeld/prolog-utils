@@ -5,6 +5,14 @@
 :- use_module(library(pprint)).
 
 :- multifile example_usage/0.
+:- multifile example_usage/1.
+:- multifile example_usage/2.
+
+%
+% Important! Keep these, or the example-collection logic will break!
+%
+example_usage(this_is_an_example).
+example_usage(this_is_an_example_with_options, []).
 
 run_tests :-
   usage_example_results(S, F, E),
@@ -27,22 +35,20 @@ usage_examples(Examples) :-
 
 usage_examples(Examples) :-
   bagof(
-    Example,
+    (example_usage :- Example),
     clause(example_usage, Example),
     Examples0
   ),
-  %% bagof(
-  %%   Example,
-  %%   Name^clause(example_usage(Name), Example),
-  %%   Examples1
-  %% ),
-  %% bagof(
-  %%   Example,
-  %%   Options^Name^clause(example_usage(Name, Options), Example),
-  %%   Examples2
-  %% ),
-  Examples1 = [],
-  Examples2 = [],
+  bagof(
+    (example_usage(Name) :- Body),
+    clause(example_usage(Name), Body),
+    Examples1
+  ),
+  bagof(
+    (example_usage(Name, Options) :- Body),
+    clause(example_usage(Name, Options), Body),
+    Examples2
+  ),
   append([Examples0, Examples1, Examples2], Examples).
 
 
@@ -73,10 +79,10 @@ is_result(failed, result(_, failed)).
 is_result(error, result(_, error(_Err, _Err2))).
 
 
-run_case(Case, Result) :-
+run_case((_Head :- Body), Result) :-
   catch(
     (
-      call(Case) *->
+      call(Body) *->
       (
 	!,
 	Result = ok(choicepoints_discarded)
@@ -98,10 +104,11 @@ print_results(Heading,  Examples) :-
   (
     Examples = [] *-> format("<none>~n") ;
     forall(
-      member(result(Module:Example, Result), Examples),
+      member(result((Head :- Example), Result), Examples),
       (
 	result_summary(Result, Summary),
-	format("~n% In module '~w'~n:- ~w. % --> ~w~n", [Module, Example, Summary])
+	%format("~n% In module '~w'~n:- ~w. % --> ~w~n", [Module, Example, Summary]),
+	format("~n% Example '~w'~n:- ~w. % --> ~w~n", [Head, Example, Summary])
       )
     )
   ).
