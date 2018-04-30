@@ -11,7 +11,7 @@
 example:example_usage :-
   phrase(prolog_atom("foobar"), "foobar").
 
-example:example_usage :-
+example:example_usage(first_test) :-
   phrase((
 	    prolog_atom("foo"),
 	    char(32, _T),
@@ -45,11 +45,11 @@ example:example_usage :-
 example:example_usage :-
   phrase(
     (
-      functor_parts("foo",[prolog_atom("a"),3])
+      functor_parts("foo",[functor("a", []),3])
     ), "foo(a, 3)").
 
 example:example_usage :-
-  Foo = functor("foo",[prolog_atom("a"),3]),
+  Foo = functor("foo",[functor("a", []),3]),
   Bar = functor("bar", [15, 33]),
   phrase(
     clause(Foo, Bar),
@@ -57,38 +57,58 @@ example:example_usage :-
   ).
 
 example:example_usage :-
-  Foo = functor("foo",[prolog_atom("a"),3]),
-  Bar = functor("bar", [15, 33]),
-  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  Foo = functor("foo",[functor("a", []),3]),
+  %% Bar = functor("bar", [15, 33]),
+  %% Baz = functor("baz", [functor("a", []), functor("b", [])]),
   phrase(
-    clause(Foo, (Bar, Baz)),
+    clause(Foo, _Body),
     "foo(a, 3) :- bar(15, 33), baz(a,b)."
   ).
 
 example:example_usage :-
-  Foo = functor("foo",[prolog_atom("a"),3]),
-  Bar = functor("bar", [15, 33]),
-  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+  % Foo = functor("foo",[prolog_atom("a"),3]),
   phrase(
-    clause(Foo, (Bar; Baz)),
+    clause(Foo, Body),
     "foo(a, 3) :- bar(15, 33); baz(a,b)."
   ).
 
-example:example_usage :-
-  Foo = functor("foo",[prolog_atom("a"),3]),
-  Bar = functor("bar", [15, 33]),
-  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+example:example_usage(foobar, [exclusive(false)]) :-
+  % Foo = functor("foo",[prolog_atom("a"),3]),
   phrase(
-    clause(Foo, (Bar, Baz, Baz)),
+    clause(_Head, _Body),
     "foo(a, 3) :- bar(15, 33), baz(a,b), baz(a,b)."
   ).
 
-example:example_usage :-
-  Foo = functor("foo",[prolog_atom("a"),3]),
-  Baz = functor("baz", [prolog_atom("a"), prolog_atom("b")]),
+example:example_usage(eq_body, [exclusive(false)]) :-
+  Foo = functor("foo",[functor("a", []),3]),
+  Baz = functor("baz", [functor("a", []), functor("b", [])]),
   phrase(
-    clause(Foo, ((3 = 3), Baz)),
+    clause(Foo, Baz),
     "foo(a, 3) :- 3 = 3, baz(a,b)."
+  ).
+
+example:example_usage(eq, [exclusive(false)]) :-
+  phrase(
+    operator_expression(_Exp, _P),
+    "3 = 3"
+  ).
+
+example:example_usage(eq2, [exclusive(false)]) :-
+  phrase(
+    operator_expression(_Exp, _P),
+    "3 = 3, 4 = 3"
+  ).
+
+example:example_usage(comma_eq_body, [exclusive(false)]) :-
+  phrase(
+    operator_expression(_Exp, _P),
+    "3 = 3, baz(2, 5)"
+  ).
+
+example:example_usage(foo, [exclusive(false)]) :-
+  phrase(
+    clause_body(_Body),
+    "a, b"
   ).
 
 %
@@ -99,38 +119,112 @@ clause(Head, Body) -->
   optional_whitespace,
   ":-",
   optional_whitespace,
-  clause_body(Body, 1200).
-
-clause_body(Body, _Precedence) -->
-  functor_whole(Body),
-  optional_whitespace,
+  clause_body(Body),
   ".".
 
-clause_body(Compound) -->
-  {
-    functor(Compound, Op, 2),
-    arg(1, Compound, F1),
-    arg(2, Compound, F2)
-  },
-  functor_whole(F1),
-  optional_whitespace,
-  operator(Op),
-  optional_whitespace,
-  clause_body(F2).
+clause_body(Body) --> clause_body(Body, _P).
 
-operator(Op) -->
-  {
-    operator(OpC),
-    atom_codes(Op, OpC)
-  },
-  OpC.
+clause_body(Body, 0) -->
+  functor_whole(Body),
+  optional_whitespace.
 
-operator(",").
-operator(";").
-operator("|").
-% operator("*->").
-% operator("-").
-% operator("=").
+clause_body(Body, Precedence) -->
+  operator_expression(Body, Precedence).
+
+operator_expression(functor(Op, F1, F2), Precedence) -->
+  prolog_term(Term1),
+  optional_whitespace,
+  operator_lhs(Term1, F1, 0, LeftPrecedence),
+  operator_rhs(Op, F2, LeftPrecedence, Precedence).
+
+operator_lhs(Term, Term, Precedence, Precedence) --> [].
+operator_lhs(Term, functor(Op, Term, Rhs), LeftPrecedence, Precedence) -->
+  operator_rhs(Op, Rhs, LeftPrecedence, Precedence).
+
+operator_rhs(Op, Right, LeftPrecedence, Precedence) -->
+  {
+    binary_operator(Op, Type, Precedence),
+    left_precedence(Type, Precedence, LeftPrecedence0),
+    LeftPrecedence =< LeftPrecedence0,
+    right_precedence(Type, Precedence, RightPrecedence)
+  },
+  Op,
+  optional_whitespace,
+  (
+    clause_body(Right, P) |
+    prolog_term(Right), { P = 0 }
+  ),
+  {
+    P =< RightPrecedence
+  }.
+
+
+binary_operator(Op, Type, Precedence) -->
+  {
+    binary_operator(Op, Type, Precedence)
+  }, Op.
+
+binary_operator(Op, Type, Precedence) :-
+  operator(Op, Type, Precedence),
+  binary_operator_type(Type).
+
+binary_operator_type(xfx).
+binary_operator_type(xfy).
+binary_operator_type(yfx).
+
+
+left_precedence(xfx, Precedence, LeftPrecedence) :-
+  succ(LeftPrecedence, Precedence).
+
+left_precedence(xfy, Precedence, LeftPrecedence) :-
+  succ(LeftPrecedence, Precedence).
+
+left_precedence(yfx, Precedence, Precedence).
+
+
+right_precedence(xfx, Precedence, RightPrecedence) :-
+  succ(RightPrecedence, Precedence).
+
+right_precedence(yfx, Precedence, RightPrecedence) :-
+  succ(RightPrecedence, Precedence).
+
+right_precedence(xfy, Precedence, Precedence).
+
+
+operator("-->", xfx, 1200).
+operator(":-", xfx, 1200).
+operator("?-", fx, 1200).
+% operator("1150", fx, 1200).
+operator(";", xfy, 1100).
+operator("|", xfy, 1100).
+operator("*->", xfy, 1050).
+operator("->", xfy, 1050).
+operator(",", xfy, 1000).
+operator(":=", xfx, 990).
+operator("\\+", fy, 900).
+operator(Op, xfx, 700) :-
+  member(Op, ["<", "=", "=..", "=@=", "\\=@=", "=:=", "=<", "==", "=\\=", ">",
+	      ">=", "@<", "@=<", "@>", "@>=", "\\=", "\\==", ">:<", ":<"]).
+operator(":", xfy, 600).
+operator("+", yxf, 500).
+operator("-", yxf, 500).
+operator("/\\", yxf, 500).
+operator("\\/", yxf, 500).
+%operator("xor", yxf, 500).
+operator("?", fx, 500).
+operator("*", yfx, 400).
+operator("/", yfx, 400).
+operator("//", yfx, 400).
+operator("<<", yfx, 400).
+operator(">>", yfx, 400).
+operator("**", xfx, 200).
+operator("^", xfy, 200).
+operator("+", fy, 200).
+operator("-", fy, 200).
+operator("\\", fy, 200).
+operator(".", yfx, 100).
+operator("$", fx, 1).
+
 
 functor_whole(functor(Name, Args)) -->
   functor_parts(Name, Args).
@@ -171,8 +265,8 @@ optional_whitespace -->
   [].
 
 
-prolog_term(prolog_atom(Term)) -->
-  prolog_atom(Term).
+prolog_term(Functor) -->
+  functor_whole(Functor).
 
 prolog_term(Integer) -->
   {
