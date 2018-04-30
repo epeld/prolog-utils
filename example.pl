@@ -14,11 +14,36 @@ run_tests :-
 
 
 usage_examples(Examples) :-
+  Examples = [_H | _R],
+  bagof(
+    Example,
+    (
+      clause(example_usage(_Name, Options), Example),
+      member(exclusive(true), Options)
+    ),
+    Examples
+  ),
+  !.
+
+usage_examples(Examples) :-
   bagof(
     Example,
     clause(example_usage, Example),
-    Examples
-  ).
+    Examples0
+  ),
+  %% bagof(
+  %%   Example,
+  %%   Name^clause(example_usage(Name), Example),
+  %%   Examples1
+  %% ),
+  %% bagof(
+  %%   Example,
+  %%   Options^Name^clause(example_usage(Name, Options), Example),
+  %%   Examples2
+  %% ),
+  Examples1 = [],
+  Examples2 = [],
+  append([Examples0, Examples1, Examples2], Examples).
 
 
 collect_results(Examples, Results) :-
