@@ -20,11 +20,10 @@ run_tests :-
   print_results("Failures", F),
   print_results("Errors", E).
 
-
 usage_examples(Examples) :-
   Examples = [_H | _R],
   bagof(
-    Example,
+    (example_usage :- Example),
     (
       clause(example_usage(_Name, Options), Example),
       member(exclusive(true), Options)
