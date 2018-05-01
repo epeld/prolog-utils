@@ -1,4 +1,3 @@
-
 :- module(pparse, []).
 :- use_module(example).
 :- use_module(library(dcg/basics)).
@@ -110,6 +109,12 @@ example:example_usage(foo, [exclusive(false)]) :-
     "a, b"
   ).
 
+example:example_usage(unary_op, [exclusive(false)]) :-
+  phrase(
+    clause_body(_Body),
+    ":- do_something"
+  ).
+
 %
 % Code
 %
@@ -125,6 +130,14 @@ clause_body(Body, 0) -->
 
 clause_body(Body, Precedence) -->
   operator_expression(Body, Precedence).
+
+operator_expression(functor(Op, F1), Precedence) -->
+  unary_operator(Op, _Type, Precedence, RightPrecedence),
+  optional_whitespace,
+  operand(F1, Precedence0),
+  {
+    Precedence0 =< RightPrecedence
+  }.
 
 operator_expression(functor(Op, F1, F2), Precedence) -->
   prolog_term(Term1),
@@ -145,13 +158,27 @@ operator_rhs(Op, Right, LeftPrecedence, Precedence) -->
   },
   Op,
   optional_whitespace,
-  (
-    clause_body(Right, P) |
-    prolog_term(Right), { P = 0 }
-  ),
+  operand(Right, P),
   {
     P =< RightPrecedence
   }.
+
+operand(Operand, Precedence) -->
+  clause_body(Operand, Precedence).
+
+operand(Operand, 0) -->
+  prolog_term(Operand).
+
+
+unary_operator(Op, fx, Precedence, RightPrecedence) :-
+  operator(Op, fx, Precedence),
+  succ(RightPrecedence, Precedence).
+
+unary_operator(Op, fy, Precedence, Precedence) :-
+  operator(Op, fy, Precedence).
+
+unary_operator(Op, Type, P, RP) -->
+  { unary_operator(Op, Type, P, RP) }, Op.
 
 
 binary_operator(Op, Type, Precedence) -->
@@ -188,6 +215,7 @@ right_precedence(xfy, Precedence, Precedence).
 
 operator("-->", xfx, 1200).
 operator(":-", xfx, 1200).
+operator(":-", fx, 1200).
 operator("?-", fx, 1200).
 % operator("1150", fx, 1200).
 operator(";", xfy, 1100).
