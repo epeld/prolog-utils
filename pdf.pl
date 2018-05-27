@@ -1,7 +1,10 @@
-:- module(pdf).
+:- module(pdf, []).
 :- use_module(library(clpfd)).
 
 :- set_prolog_flag(double_quotes, codes).
+
+gibberish --> [].
+gibberish --> [_C], gibberish.
 
 xref(xref(Start, Rows)) -->
   "xref", whitespace,
@@ -17,7 +20,7 @@ xref_rows([R | Rows]) -->
   xref_rows(Rows).
 
 xref_row(xref_row(X, Y, State)) -->
-  integer(X), space, integer(Y), space, allocation_state(State).
+  integer(X), space, integer(Y), space, allocation_state(State), optional_space.
 
 allocation_state(free) --> "f".
 allocation_state(in_use) --> "n".
@@ -30,7 +33,8 @@ trailer(trailer(Meta, Offset)) -->
 xref_indicator(Offset) -->
   "startxref", whitespace,
   integer(Offset), whitespace,
-  "%%EOF".
+  "%%EOF",
+  optional_whitespace.
 
 stream(Contents, Length) -->
   {
@@ -155,6 +159,7 @@ alpha(C) :-
 
 space --> " ".
 
+optional_space --> space ; [].
 optional_whitespace --> whitespace ; [].
 
 whitespace --> " ".
@@ -176,13 +181,18 @@ hex([H | Rest]) -->
 
 hex([]) --> [].
 
-hexchar(C) --> { hexchar(C) }, [C].
+hexchar(N) --> { hexchar(C, N) }, [C].
 
-hexchar(C) :-
-  digit(C) ;
+hexchar(C, N) :-
+  (
+    digit(C),
+    [Zero] = "0",
+    N #= C - Zero
+  ) ;
   (
     [A,F] = "AF",
-    A #=< C, C #=< F
+    A #=< C, C #=< F,
+    N #= C - A
   ).
 
 
@@ -348,12 +358,12 @@ test(xref, all(_X = [_])) :-
   phrase(pdf:xref(_),
          "xref
 0 6
-0000000000 65535 f
-0000003321 00000 n
-0000003209 00000 n
-0000000009 00000 n
-0000182298 00000 n
-0000178182 00000 n
+0000000000 65535 f 
+0000003321 00000 n 
+0000003209 00000 n 
+0000000009 00000 n 
+0000182298 00000 n 
+0000178182 00000 n 
 ").
 
 test(xref_row, all(_X = [_])) :-
@@ -363,6 +373,10 @@ test(xref_row, all(_X = [_])) :-
 test(xref_row_2, all(_X = [_])) :-
   phrase(pdf:xref_row(_),
          "0000178182 00000 n").
+
+test(xref_row_3, all(_X = [_])) :-
+  phrase(pdf:xref_row(_),
+         "0000000009 00000 n ").
 
 test(paren_string, all(_X = [_])) :-
   phrase(pdf:paren_string(_),
@@ -375,5 +389,19 @@ test(paren_string_nested, all(_X = [_])) :-
 test(paren_string_escaped, all(_X = [_])) :-
   phrase(pdf:paren_string(_),
          "(This is \\)a\\( string)").
+
+test(gibberish, all(_X = [_])) :-
+  phrase((
+            pdf:gibberish, "abc"
+          ),
+         "asdawfwfwsdabc").
+
+test(gibberish, all(_X = [_])) :-
+  phrase((
+            pdf:gibberish,
+            "abc",
+            pdf:gibberish
+          ),
+         "2232abc ").
 
 :- end_tests(pdf).
