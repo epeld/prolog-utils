@@ -3,9 +3,31 @@
 
 :- set_prolog_flag(double_quotes, codes).
 
+xref(xref(Start, Rows)) -->
+  "xref", whitespace,
+  integer(Start), space, integer(Count), whitespace,
+  {
+    length(Rows, Count)
+  },
+  xref_rows(Rows).
+
+xref_rows([]) --> [].
+xref_rows([R | Rows]) -->
+  xref_row(R), whitespace,
+  xref_rows(Rows).
+
+xref_row(xref_row(X, Y, State)) -->
+  integer(X), space, integer(Y), space, allocation_state(State).
+
+allocation_state(free) --> "f".
+allocation_state(in_use) --> "n".
+
 trailer(trailer(Meta, Offset)) -->
   "trailer", whitespace,
   dictionary(Meta), whitespace,
+  xref_indicator(Offset).
+
+xref_indicator(Offset) -->
   "startxref", whitespace,
   integer(Offset), whitespace,
   "%%EOF".
@@ -163,6 +185,40 @@ hexchar(C) :-
     A #=< C, C #=< F
   ).
 
+
+paren_string(string(S)) -->
+  paren_string_(S).
+
+paren_string_(S) -->
+  "(",
+  paren_content(S),
+  ")".
+
+paren_content([]) --> [].
+paren_content([C | Rest]) -->
+  paren_char(C),
+  paren_content(Rest).
+
+paren_content(S) -->
+  paren_string_(S0),
+  {
+    append(["(", S0, ")"], SPrefix),
+    append(SPrefix, Other, S)
+  },
+  paren_content(Other).
+
+paren_char(C) -->
+  [C],
+  {
+    [Left, Right] = "()",
+    C #\= Left,
+    C #\= Right
+  }.
+
+paren_char(C) -->
+  "\\", [C].
+
+
 :- begin_tests(pdf).
 
 :- set_prolog_flag(double_quotes, codes).
@@ -256,6 +312,11 @@ test(key_array, all(_X = [_])) :-
          "[ /PDF /Text ]"),
   length(X, 2).
 
+test(reference_array, all(_X = [_])) :-
+  phrase(pdf:array(X),
+         "[73 0 R 77 0 R 80 0 R 83 0 R 86 0 R 89 0 R]"),
+  length(X, 6).
+
 test(stream, all(_X = [_])) :-
   phrase(pdf:stream(X, 10),
          "stream\r\n0123456789\nendstream"),
@@ -282,5 +343,37 @@ test(trailer, all(_X = [_])) :-
 startxref
 183475
 %%EOF").
+
+test(xref, all(_X = [_])) :-
+  phrase(pdf:xref(_),
+         "xref
+0 6
+0000000000 65535 f
+0000003321 00000 n
+0000003209 00000 n
+0000000009 00000 n
+0000182298 00000 n
+0000178182 00000 n
+").
+
+test(xref_row, all(_X = [_])) :-
+  phrase(pdf:xref_row(_),
+         "0000000000 65535 f").
+
+test(xref_row_2, all(_X = [_])) :-
+  phrase(pdf:xref_row(_),
+         "0000178182 00000 n").
+
+test(paren_string, all(_X = [_])) :-
+  phrase(pdf:paren_string(_),
+         "(This is a string)").
+
+test(paren_string_nested, all(_X = [_])) :-
+  phrase(pdf:paren_string(_),
+         "(This is (a) string)").
+
+test(paren_string_escaped, all(_X = [_])) :-
+  phrase(pdf:paren_string(_),
+         "(This is \\)a\\( string)").
 
 :- end_tests(pdf).
