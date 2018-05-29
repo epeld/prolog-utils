@@ -6,6 +6,17 @@
 gibberish --> [].
 gibberish --> [_C], gibberish.
 
+remainder(_A, []).
+
+xref_lookup(xref(Start, Rows), reference(X, Gen), Offset) :-
+  X #= X0 + Start,
+  0 #=< X0,
+  nth0(
+    X0,
+    Rows,
+    xref_row(Offset, Gen, in_use)
+  ).
+
 xref(xref(Start, Rows)) -->
   "xref", whitespace,
   integer(Start), space, integer(Count), whitespace,
