@@ -412,6 +412,10 @@ test(paren_string_escaped, all(_X = [_])) :-
   phrase(pdf:paren_string(_),
          "(This is \\)a\\( string)").
 
+test(charset_string, all(_X = [_])) :-
+  phrase(pdf:paren_string(_),
+         "(/A/C/E/H/I/M/O/R/S/T/W)").
+
 test(gibberish, all(_X = [_])) :-
   phrase((
             pdf:gibberish, "abc"
