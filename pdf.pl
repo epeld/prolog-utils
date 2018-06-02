@@ -97,16 +97,18 @@ float(F) -->
 reference(reference(X, Y)) -->
   integer(X), space, integer(Y), space, "R".
 
-object(object(R, D, none)) -->
-  object_definition(R), whitespace, dictionary(D), whitespace, "endobj".
-
-object(object(R, D, stream(StreamContents))) -->
+object(object(R, D, Stream)) -->
   object_definition(R), whitespace, dictionary(D), whitespace,
+  object_with_stream(object(R, D, Stream)),
+  "endobj".
+
+object_with_stream(object(_R, _D, none)) --> [].
+object_with_stream(object(_R, D, stream(StreamContents))) -->
   {
     member(key("Length")-StreamLength, D)
   },
   stream(StreamContents, StreamLength),
-  whitespace, "endobj".
+  whitespace.
 
 object_definition(reference(X, Y)) -->
   integer(X),
@@ -122,7 +124,7 @@ dictionary(D) -->
   ">>".
 
 key_value_pairs([Key - Value | Rest]) -->
-  key(Key), whitespace, value(Value), whitespace,
+  key(Key), whitespace, value(Value), whitespace, optional_spaces, optional_whitespace,
   ( key_value_pairs(Rest) ; empty(Rest) ).
 
 
