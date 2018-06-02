@@ -290,6 +290,11 @@ test(nested_dictionary, all(_X = [_])) :-
 >>"),
   length(D, 2).
 
+test(special_array, [blocked(todo), all(_X = [_])]) :-
+  phrase(pdf:dictionary(_D),
+         "[ 0 /.notdef 65/A 66/.notdef 67/C 68/.notdef 69/E 70/.notdef 72/H/I 74/.notdef 77/M 78/.notdef 79/O 80/.notdef 82/
+R/S/T 85/.notdef 87/W 88/.notdef]").
+
 
 test(object_definition, all(_X = [_])) :-
   phrase(pdf:object_definition(_R),
