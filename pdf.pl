@@ -135,7 +135,7 @@ key_(Key, Before, After) :-
   maplist(keychar, Key).
 
 keychar(C) :-
-  digit(C) ; alpha(C).
+  digit(C) ; alpha(C) ; member(C, "+-").
 
 value(Value) -->
   number(Value) ;
@@ -144,6 +144,14 @@ value(Value) -->
   array(Value) ;
   dictionary(Value) ;
   hex_string(Value).
+
+integer(Integer) -->
+  "-",
+  digits(Digits),
+  {
+    number_codes(Integer0, Digits),
+    Integer is -Integer0
+  }.
 
 integer(Integer) -->
   digits(Digits),
@@ -264,9 +272,15 @@ test(alpha) :-
 test(digit) :-
   phrase(digit(_D), "3").
 
-test(key) :-
+test(number, all(_X = [-194])) :-
+  phrase(integer(_Int), "-194").
+
+test(key, all(K = ["Length"])) :-
   length(K, 6),
   phrase(key(key(K)), "/Length").
+
+test(key_non_alphanum, all(K = ["XFHWXJ+CMBX10"])) :-
+  phrase(key(key(K)), "/XFHWXJ+CMBX10").
 
 test(keynum, all(_X = [_])) :-
   length(K, 3),
