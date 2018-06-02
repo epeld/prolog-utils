@@ -143,6 +143,7 @@ value(Value) -->
   reference(Value) ;
   array(Value) ;
   dictionary(Value) ;
+  paren_string(Value) ;
   hex_string(Value).
 
 integer(Integer) -->
