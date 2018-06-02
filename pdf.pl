@@ -425,7 +425,7 @@ test(stream, all(_X = [_])) :-
 
 test(stream_obj, all(_X = [_])) :-
   phrase(pdf:object(object(_A, _B, _C)),
-         "1 0 obj << /Length 10 >> stream\r\n0123456789\nendstream endobj").
+         "1 0 obj <<\n/Length 10\n   \n/Filter /FlateDecode\n>>\nstream\n0123456789\nendstream\nendobj").
 
 test(hex_string, all(_X = [_])) :-
   phrase(pdf:hex_string(_),
