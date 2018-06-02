@@ -303,6 +303,25 @@ test(object, all(_X = [_])) :-
 /Filter /FlateDecode
 >> endobj").
 
+test(write_object, [blocked(infinite_loop), all(_X = [_])]) :-
+  phrase(pdf:object(object(reference(1,2), [key("Length")-123], none)),
+         S),
+  S = "1 2 obj <<
+/Length 123
+>> endobj".
+
+test(object_references, all(Ref = [reference(1,2), reference(4,5)])) :-
+  pdf:object_references(
+        object(
+          reference(3,4),
+          [key("Something")-"Else",
+           key("Foo")-reference(1,2),
+           key("Bar")-reference(4,5)
+          ], none
+        ),
+        Ref
+      ).
+
 test(reference, all(_X = [_])) :-
   phrase(pdf:reference(reference(X, Y)),
          "15 0 R"),
