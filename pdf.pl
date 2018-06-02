@@ -8,9 +8,20 @@ gibberish --> [_C], gibberish.
 
 remainder(_A, []).
 
+object_references(object(_Ref, Meta, _Stream), Reference) :-
+  Reference = reference(_X, _Y),
+  member(key(_Key)-Reference, Meta).
+
+all_object_references(Object, Refs) :-
+  findall(Ref, object_references(Object, Ref), Refs).
+
 xref_lookup(xref(Start, Rows), reference(X, Gen), Offset) :-
+  length(Rows, Length),
+  Length0 #= Length - 1,
+  between(0, Length0, X0),
   X #= X0 + Start,
-  0 #=< X0,
+  %% X #= X0 + Start,
+  %% 0 #=< X0, X0 < Length,
   nth0(
     X0,
     Rows,
