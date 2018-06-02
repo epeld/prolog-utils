@@ -181,6 +181,9 @@ alpha(C) :-
 
 space --> " ".
 
+optional_spaces --> space, optional_spaces.
+optional_spaces --> [].
+
 optional_space --> space ; [].
 optional_whitespace --> whitespace ; [].
 
@@ -274,6 +277,31 @@ test(dictionary, all(_X = [_])) :-
          "<<
 /Length 3121
 /Filter /FlatDecode
+>>"),
+  length(D, 2).
+
+test(dictionary_2, all(_X = [_])) :-
+  phrase(pdf:dictionary(D),
+         "<<
+/Ascent 694
+/CapHeight 686
+/Descent -194
+/FontName /XFHWXJ+CMBX10
+/ItalicAngle 0
+/StemV 114
+/XHeight 444
+/FontBBox [-301 -250 1164 946]
+/Flags 4
+/CharSet (/A/C/E/H/I/M/O/R/S/T/W)
+/FontFile 5 0 R
+>>"),
+  length(D, _L).
+
+test(dictionary_3, all(_X = [_])) :-
+  phrase(pdf:dictionary(D),
+         "<<
+/Length 3121      
+/Filter /FlateDecode
 >>"),
   length(D, 2).
 
