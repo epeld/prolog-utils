@@ -38,13 +38,58 @@ context_from_stream(Stream, context(Stream, XRef, Trailer)) :-
 
 
 do_something(Context) :-
+  format("~n// ---- Start of Graph -----~ndigraph {~n"),
+  % First, write object types
+  forall(
+    context_reify_object(Context, Ref, Object),
+    (
+      find_object_type(Object, Type),
+      pretty_reference_with_label(Ref, Type, Pretty, Label),
+      format("\"~w\" [ label=\"~w\" ];~n", [ Pretty, Label ])
+    )
+  ),
+  % Write relations
   forall(
     context_reify_object(Context, Ref, Object),
     (
       pdf:all_object_references(Object, Refs),
-      format("Object ~w -> ~w~n", [Ref, Refs])
+      maplist(pretty_reference, Refs, PrettyRefs),
+      pretty_reference(Ref, PrettyRef),
+      forall(
+        member(R, PrettyRefs),
+        (
+          format("\"~w\" -> \"~w\";~n", [PrettyRef, R])
+        )
+      )
     )
+  ),
+  format("}~n// ---- End of Graph -----~n").
+
+pretty_reference(reference(X,Y), Pretty) :-
+  format(string(Pretty), "~w_~w_obj", [X,Y]).
+
+pretty_reference_with_label(reference(X,Y), Type, Pretty, Label) :-
+  format(string(Pretty), "~w_~w_obj", [X,Y]),
+  format(string(Label), "~w_~w_~w", [X,Y,Type]).
+
+find_object_type(Object, Type) :-
+  once(object_type(Object, Type)) *-> true
+  ; (
+    % format("Unkown type for ~w~n", [Object]),
+    Type = unkown
   ).
+
+object_type(object(_R, D, _Payload), Type) :-
+  dictionary_type(D, Type).
+
+object_type(object(_R, _, skipped), stream).
+
+object_type(object(_R, none, array(_)), array).
+
+dictionary_type(D, Type) :-
+  member(key("Type")-key(CType), D),
+  atom_codes(Type0, CType),
+  downcase_atom(Type0, Type).
 
 %
 % Seek to start of X-ref section
@@ -66,12 +111,11 @@ locate_xref(Stream, Offset) :-
 %
 context_reify_object(Context, Reference, Object) :-
   context_locate_object(Context, Reference),
-  format("Located ~w", [Reference]),
   (
     context_read_object(Context, Object)
     *->
-    format(" - OK~n", []) ;
-    format("FAIL ~n")
+    true ;
+    format("~w - FAILED ~n", [Reference])
   )
 .
 
