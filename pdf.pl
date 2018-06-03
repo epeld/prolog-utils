@@ -58,15 +58,27 @@ xref_indicator(Offset) -->
   "%%EOF",
   optional_whitespace.
 
-stream(Contents, Length) -->
-  {
-    length(Contents, Length)
-  },
-  "stream",
-  ( "\n" ; "\r\n" ),
-  Contents,
+stream(skipped, Length) -->
+  "stream", ( "\n" ; "\r\n" ),
+  skip(Length),
   ("\n" ; []),
   "endstream".
+
+skip(0) --> [].
+skip(N) -->
+  { N > 0, N0 is N - 1 },
+  [_],
+  skip(N0).
+
+%% stream(Contents, Length) -->
+%%   {
+%%     length(Contents, Length)
+%%   },
+%%   "stream",
+%%   ( "\n" ; "\r\n" ),
+%%   Contents,
+%%   ("\n" ; []),
+%%   "endstream".
 
 array(Array) --> "[", optional_whitespace, array_(Array), "]".
 
@@ -421,7 +433,9 @@ test(reference_array, all(_X = [_])) :-
 test(stream, all(_X = [_])) :-
   phrase(pdf:stream(X, 10),
          "stream\r\n0123456789\nendstream"),
-  length(X, 10).
+  %length(X, 10)
+  X = skipped
+.
 
 test(stream_obj, all(_X = [_])) :-
   phrase(pdf:object(object(_A, _B, _C)),
