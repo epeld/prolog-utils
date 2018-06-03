@@ -84,15 +84,31 @@ array(Array) --> "[", optional_whitespace, array_(Array), "]".
 
 array_([]) --> [].
 array_([X | Rest]) -->
-  value(X),
+  array_value(X),
   array_1(Rest).
 
 array_1([]) --> optional_whitespace.
 array_1([X | Rest]) -->
   whitespace,
-  value(X),
+  array_value(X),
   array_1(Rest).
 
+array_value(Value) --> value(Value).
+array_value(N-Symbols) -->
+  integer(N),
+  optional_whitespace,
+  keys(Symbols).
+
+keys_([]) -->
+  [].
+
+keys_([Symbol | Rest]) -->
+  key(Symbol),
+  keys_(Rest).
+
+keys([Symbol | Rest]) -->
+  key(Symbol),
+  keys_(Rest).
 
 number(X) --> integer(X).
 number(X) --> float(X).
@@ -109,18 +125,26 @@ float(F) -->
 reference(reference(X, Y)) -->
   integer(X), space, integer(Y), space, "R".
 
-object(object(R, D, Stream)) -->
-  object_definition(R), whitespace, dictionary(D), whitespace,
-  object_with_stream(object(R, D, Stream)),
+object(object(R, D, Payload)) -->
+  object_definition(R), whitespace,
+  (
+    ( dictionary(D), whitespace )
+  ; { D = none }
+  ),
+  (
+    ( object_with_payload(object(R, D, Payload)), whitespace )
+  ; { Payload = none }
+  ),
   "endobj".
 
-object_with_stream(object(_R, _D, none)) --> [].
-object_with_stream(object(_R, D, stream(StreamContents))) -->
+object_with_payload(object(_R, _D, array(Array))) -->
+  array(Array).
+
+object_with_payload(object(_R, D, stream(StreamContents))) -->
   {
     member(key("Length")-StreamLength, D)
   },
-  stream(StreamContents, StreamLength),
-  whitespace.
+  stream(StreamContents, StreamLength).
 
 object_definition(reference(X, Y)) -->
   integer(X),
@@ -149,7 +173,7 @@ key_(Key, Before, After) :-
   maplist(keychar, Key).
 
 keychar(C) :-
-  digit(C) ; alpha(C) ; member(C, "+-").
+  digit(C) ; alpha(C) ; member(C, "+-.").
 
 value(Value) -->
   number(Value) ;
@@ -294,6 +318,10 @@ test(key, all(K = ["Length"])) :-
   length(K, 6),
   phrase(key(key(K)), "/Length").
 
+test(key, all(K = [".notdef"])) :-
+  length(K, 7),
+  phrase(key(key(K)), "/.notdef").
+
 test(key_non_alphanum, all(K = ["XFHWXJ+CMBX10"])) :-
   phrase(key(key(K)), "/XFHWXJ+CMBX10").
 
@@ -365,6 +393,11 @@ test(object, all(_X = [_])) :-
 /Filter /FlateDecode
 >> endobj").
 
+test(array_object, all(_X = [_])) :-
+  phrase(pdf:object(object(_R, none, X)),
+         "108 0 obj\n[ 1 2 3 ]\nendobj"),
+  X = array([1,2,3]).
+
 test(write_object, [blocked(infinite_loop), all(_X = [_])]) :-
   phrase(pdf:object(object(reference(1,2), [key("Length")-123], none)),
          S),
@@ -399,6 +432,15 @@ test(array, all(_X = [_])) :-
   phrase(pdf:array(X),
          "[1 0 3 44.5]"),
   length(X, 4).
+
+test(difference_array, nondet) :-
+  phrase(pdf:array(_X),
+         "[ 0 /.notdef 39/quoteright 40/.notdef 46/period 47/.notdef 65/A 66/.notdef 68/D/E 70/.notdef 73/I 74/.notdef 76/L/M/N 79/.notdef 80/P 81/.notdef 82/R/S/T/U 86/.notdef 87/W 88/.notdef 97/a/b/c/d/e/f/g/h/i 106/.notdef 108/l/m/n/o/p/q/r/s/t/u 118/.notdef 119/w 120/.notdef 121/y 122/.notdef]").
+
+test(array_2, all(_X = [_])) :-
+  phrase(pdf:array(X),
+         "[1 2 3 ]"),
+  length(X, 3).
 
 test(whitespace_array, all(_X = [_])) :-
   phrase(pdf:array(X),
