@@ -9,9 +9,9 @@ tree_root(Tree, Node) :-
 %
 % Find the Subgraph of Graph that Node belongs to
 subgraph_of(Node, Graph, Subgraph) :-
-  subgraphs(Graph, Subgraphs),
-  member(Subgraph, Subgraphs),
-  has_edge(Subgraph, Node).
+  node_edge(Node, Edge),
+  member(Edge, Graph),
+  subgraph(Graph, [Edge], Subgraph).
 
 %
 % Find all Subraphs (equivalence-classes) of [Edge | Graph]
@@ -36,18 +36,14 @@ subgraph(Graph0, Subgraph0, Subgraph) :-
   )).
 
 
-has_edge(G, Node) :-
-  member(Node -> _Other, G).
+connected_to(G, Edge) :-
+  node_edge(Node, Edge),
+  node_edge(Node, EdgeFromG),
+  member(EdgeFromG, G).
 
-has_edge(G, Node) :-
-  member(_Other -> Node, G).
 
-connected_to(G, (N -> _N2)) :-
-  has_edge(G, N).
-
-connected_to(G, (_N -> N2)) :-
-  has_edge(G, N2).
-
+node_edge(N, N -> _).
+node_edge(N, _ -> N).
 
 :- begin_tests(graph).
 
@@ -57,6 +53,7 @@ test(subgraphs, nondet) :-
     [a->b, d->e, b->c, c->f],
     Subgraphs
   ),
+  !,
   length(Subgraphs, 2),
   member(G, Subgraphs),
   member(a->b, G),
