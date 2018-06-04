@@ -6,11 +6,15 @@ tree_root(Tree, Node) :-
   member(Node->_Other, Tree),
   \+ member(_RealRoot->Node, Tree).
 
+%
+% Find the Subgraph of Graph that Node belongs to
 subgraph_of(Node, Graph, Subgraph) :-
   subgraphs(Graph, Subgraphs),
   member(Subgraph, Subgraphs),
   has_edge(Subgraph, Node).
 
+%
+% Find all Subraphs (equivalence-classes) of [Edge | Graph]
 subgraphs([Edge | Graph], [Subgraph | Subgraphs]) :-
   subgraph(Graph, [Edge], Subgraph),
   subtract(Graph, Subgraph, Graph2),
