@@ -65,6 +65,24 @@ do_something(Context) :-
   ),
   format("}~n// ---- End of Graph -----~n").
 
+graph_from_objects(Objects, Graph) :-
+  findall(
+    (Ref->Ref2),
+    (
+      member(Object, Objects),
+      Object = object(Ref, _1, _2),
+      pdf:object_references(Object, Ref2)
+    ),
+    Graph
+  ).
+
+all_objects(Context, Objects) :-
+  findall(
+    Object,
+    context_reify_object(Context, _Ref, Object),
+    Objects
+  ).
+
 pretty_reference(reference(X,Y), Pretty) :-
   format(string(Pretty), "~w_~w_obj", [X,Y]).
 
