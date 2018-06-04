@@ -1,5 +1,11 @@
 :- module(graph, []).
 
+%
+% Node is the root of the tree Tree
+tree_root(Tree, Node) :-
+  member(Node->_Other, Tree),
+  \+ member(_RealRoot->Node, Tree).
+
 subgraph_of(Node, Graph, Subgraph) :-
   subgraphs(Graph, Subgraphs),
   member(Subgraph, Subgraphs),
@@ -60,6 +66,7 @@ test(subgraph_of, nondet) :-
     [a->b, d->e, b->c, c->f, e->g],
     G
   ),
+  !,
   length(G, 2),
   member(d->e, G),
   member(e->g, G).
@@ -70,8 +77,29 @@ test(subgraph_of_2, nondet) :-
     [a->b, d->e, b->c, c->f, e->g],
     G
   ),
+  !,
   length(G, 3),
   member(a->b, G),
   member(b->c, G).
+
+test(tree_root, nondet) :-
+  subgraph_of(
+    c,
+    [a->b, d->e, b->c, c->f, e->g],
+    G
+  ),
+  !,
+  tree_root(G, Root),
+  Root = a.
+
+test(tree_root_2, nondet) :-
+  subgraph_of(
+    g,
+    [a->b, d->e, b->c, c->f, e->g],
+    G
+  ),
+  !,
+  tree_root(G, Root),
+  Root = d.
 
 :- end_tests(graph).
