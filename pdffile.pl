@@ -1,4 +1,8 @@
-:- module(pdffile, []).
+:- module(pdffile,
+          [
+            with_file_context/2,
+            context_reify_object/3
+          ]).
 :- use_module(library(clpfd)).
 :- use_module(pdf).
 
@@ -8,15 +12,13 @@
 :- set_prolog_flag(debugger_write_options,
                    [quoted(true), portray(true), max_depth(30), priority(699)]).
 
-test_app :-
-  parse_file("/home/erik/Downloads/halmos.pdf", _Ctx).
-
-parse_file(FileName, Context) :-
+with_file_context(FileName, Goal) :-
+  functor(Goal, _Term, _Arity),
   setup_call_cleanup(
     open(FileName, read, Stream, [type(binary)]),
     (
       context_from_stream(Stream, Context),
-      do_something(Context)
+      call(Goal, Context)
     ),
     close(Stream)
   ).
@@ -36,45 +38,6 @@ context_from_stream(Stream, context(Stream, XRef, Trailer)) :-
   ),
   !.
 
-
-do_something(Context) :-
-  format("~n// ---- Start of Graph -----~ndigraph {~n"),
-  % First, write object types
-  forall(
-    context_reify_object(Context, Ref, Object),
-    (
-      find_object_type(Object, Type),
-      pretty_reference_with_label(Ref, Type, Pretty, Label),
-      format("\"~w\" [ label=\"~w\" ];~n", [ Pretty, Label ])
-    )
-  ),
-  % Write relations
-  forall(
-    context_reify_object(Context, Ref, Object),
-    (
-      pdf:all_object_references(Object, Refs),
-      maplist(pretty_reference, Refs, PrettyRefs),
-      pretty_reference(Ref, PrettyRef),
-      forall(
-        member(R, PrettyRefs),
-        (
-          format("\"~w\" -> \"~w\";~n", [PrettyRef, R])
-        )
-      )
-    )
-  ),
-  format("}~n// ---- End of Graph -----~n").
-
-graph_from_objects(Objects, Graph) :-
-  findall(
-    (Ref->Ref2),
-    (
-      member(Object, Objects),
-      Object = object(Ref, _1, _2),
-      pdf:object_references(Object, Ref2)
-    ),
-    Graph
-  ).
 
 all_objects(Context, Objects) :-
   findall(
