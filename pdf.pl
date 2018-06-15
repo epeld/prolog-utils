@@ -6,7 +6,7 @@
 gibberish --> [].
 gibberish --> [_C], gibberish.
 
-object_type(object(_R, _, skipped), stream).
+object_type(object(_R, _, stream(_)), stream).
 
 object_type(object(_R, none, array(_)), array).
 
