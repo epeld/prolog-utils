@@ -10,4 +10,14 @@
 :- set_prolog_flag(debugger_write_options,
                    [quoted(true), portray(true), max_depth(30), priority(699)]).
 
+test_app :-
+  with_file_context("/home/erik/Downloads/halmos.pdf",
+                    code_app:do_something).
 
+
+do_something(Context) :-
+  format("Program started~n"),
+  pdffile:context_reify_object(Context, Reference, Object),
+  pdf:object_type(Object, stream),
+  !,
+  format("Object ~w has type ~w~n", [Reference, stream]).
