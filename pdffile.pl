@@ -46,31 +46,6 @@ all_objects(Context, Objects) :-
     Objects
   ).
 
-pretty_reference(reference(X,Y), Pretty) :-
-  format(string(Pretty), "~w_~w_obj", [X,Y]).
-
-pretty_reference_with_label(reference(X,Y), Type, Pretty, Label) :-
-  format(string(Pretty), "~w_~w_obj", [X,Y]),
-  format(string(Label), "~w_~w_~w", [X,Y,Type]).
-
-find_object_type(Object, Type) :-
-  once(object_type(Object, Type)) *-> true
-  ; (
-    % format("Unkown type for ~w~n", [Object]),
-    Type = unkown
-  ).
-
-object_type(object(_R, D, _Payload), Type) :-
-  dictionary_type(D, Type).
-
-object_type(object(_R, _, skipped), stream).
-
-object_type(object(_R, none, array(_)), array).
-
-dictionary_type(D, Type) :-
-  member(key("Type")-key(CType), D),
-  atom_codes(Type0, CType),
-  downcase_atom(Type0, Type).
 
 %
 % Seek to start of X-ref section

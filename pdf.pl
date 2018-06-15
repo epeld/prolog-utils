@@ -6,6 +6,18 @@
 gibberish --> [].
 gibberish --> [_C], gibberish.
 
+object_type(object(_R, _, skipped), stream).
+
+object_type(object(_R, none, array(_)), array).
+
+object_type(object(_R, D, _Payload), Type) :-
+  dictionary_type(D, Type).
+
+dictionary_type(D, Type) :-
+  member(key("Type")-key(CType), D),
+  atom_codes(Type0, CType),
+  downcase_atom(Type0, Type).
+
 remainder(_A, []).
 
 object_references(object(_Ref, Meta, _Stream), Reference) :-
