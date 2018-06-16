@@ -3,8 +3,12 @@
 
 :- set_prolog_flag(double_quotes, codes).
 
+gibberish2(_A, _B).
+
 gibberish --> [].
 gibberish --> [_C], gibberish.
+
+object_dictionary(object(_R, Dictionary, _), Dictionary).
 
 object_type(object(_R, _, stream(_)), stream).
 
@@ -70,8 +74,11 @@ xref_indicator(Offset) -->
   "%%EOF",
   optional_whitespace.
 
+stream_header -->
+  "stream", ( "\n" ; "\r\n" ).
+
 stream(skipped, Length) -->
-  "stream", ( "\n" ; "\r\n" ),
+  stream_header,
   skip(Length),
   ("\n" ; []),
   "endstream".
@@ -137,6 +144,14 @@ float(F) -->
 reference(reference(X, Y)) -->
   integer(X), space, integer(Y), space, "R".
 
+%
+% Used to read a stream object up until the
+% stream data starts
+stream_object_header(object(R, D, _)) -->
+  object_definition(R), whitespace,
+  dictionary(D), whitespace,
+  stream_header.
+
 object(object(R, D, Payload)) -->
   object_definition(R), whitespace,
   (
@@ -154,9 +169,13 @@ object_with_payload(object(_R, _D, array(Array))) -->
 
 object_with_payload(object(_R, D, stream(StreamContents))) -->
   {
-    member(key("Length")-StreamLength, D)
+    dictionary_length(D, StreamLength)
   },
   stream(StreamContents, StreamLength).
+
+
+dictionary_length(Dictionary, Length) :-
+  member(key("Length")-Length, Dictionary).
 
 object_definition(reference(X, Y)) -->
   integer(X),
