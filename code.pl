@@ -10,9 +10,24 @@
 :- set_prolog_flag(double_quotes, codes).
 
 code_block(Commands) -->
-  "BT",
+  "BT", pdf:whitespace,
   code_commands(Commands),
+  pdf:whitespace,
   "ET".
+
+code_commands([ C | Commands]) -->
+  code_command(C),
+  code_commands_1(Commands).
+
+code_commands([]) --> [].
+
+code_commands_1([ C | Commands]) -->
+  pdf:optional_whitespace,
+  code_command(C),
+  code_commands_1(Commands).
+
+code_commands_1([]) --> [].
+
 
 code_command(Command) -->
   arguments(Args),
@@ -135,6 +150,10 @@ test(command6, all(C = [tj([string("HO"), 32, string("W"), -498, string("TO")])]
   phrase(code_command(C),
          "[(HO)32(W)-498(TO)]TJ").
 
+test(code_ccommands, all(C = [[td(key("F30"), -498), td(key("F30"), -498)]])) :-
+  phrase(code_commands(C), "/F30 -498 Td /F30 -498 Td").
 
+test(code_block, all(C = [[td(key("F30"), -498), td(key("F30"), -498)]])) :-
+  phrase(code_block(C), "BT /F30 -498 Td /F30 -498 Td ET").
 
 :- end_tests(code).
