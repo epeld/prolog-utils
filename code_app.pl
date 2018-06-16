@@ -20,17 +20,27 @@ do_something(Context) :-
   pdffile:context_reify_object(Context, Reference, Object),
   pdf:object_type(Object, stream),
 
-  % Print info
   !,
   format("Object ~w has type ~w~n", [Reference, stream]),
-  pretty_print_object(Object),
 
-  % Locate data
+  with_code_stream(Context, Reference, print_code).
+
+
+print_code(ZStream) :-
+  phrase_from_stream(everything(Content), ZStream),
+
+  !,
+  format("---PDF CODE---~n"),
+  format(Content),
+  format("--------------~n").
+
+
+with_code_stream(Context, Reference, Goal) :-
   pdffile:context_stream(Context, Stream),
   pdffile:context_locate_object(Context, Reference),
-  find_stream_data_offset(Stream, Object, Offset),
 
-  % Open stream
+  find_stream_data_offset(Stream, Offset),
+
   !,
   seek(Stream, Offset, bof, Offset),
   setup_call_cleanup(
@@ -40,15 +50,13 @@ do_something(Context) :-
         close_parent(false)
       ]
     ),
-    phrase_from_stream(everything(Content), ZStream),
+    call(Goal, ZStream),
     close(ZStream)
-  ),
+  ).
 
-  !,
-  format("---PDF CODE---~n"),
-  format(Content),
-  format("--------------~n").
 
+find_stream_data_offset(Stream, Offset) :-
+  find_stream_data_offset(Stream, _Object, Offset).
 
 find_stream_data_offset(Stream, Object, Offset) :-
   phrase_from_stream(
