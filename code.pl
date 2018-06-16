@@ -99,7 +99,7 @@ test(arguments, nondet) :-
   phrase(arguments(C), "211.283 683.997"),
   C = [211.283, 683.997].
 
-test(arguments2, all(C = [[string("HO"), -498]])) :-
+test(arguments2, all(C = [[[string("HO"), -498]]])) :-
   phrase(arguments(C),
          "[(HO)-498]"). % TODO whitespace fixes the problem..
 
