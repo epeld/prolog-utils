@@ -57,7 +57,10 @@ special_whitespace(N), [Digit] -->
     number(N) ; key(N)
   },
   pdf:whitespace,
-  pdf:digit(Digit).
+  (
+    pdf:digit(Digit)
+  ; ("-", { [Digit] = "-" }
+  )).
 
 special_whitespace(Other) -->
   {
@@ -96,11 +99,42 @@ test(arguments, nondet) :-
   phrase(arguments(C), "211.283 683.997"),
   C = [211.283, 683.997].
 
+test(arguments2, all(C = [[string("HO"), -498]])) :-
+  phrase(arguments(C),
+         "[(HO)-498]"). % TODO whitespace fixes the problem..
+
+test(arguments3, all(C = [[[string("HO")]]])) :-
+  phrase(arguments(C),
+         "[(HO)]").
+
+test(arguments4, all(C = [[string("HO")]])) :-
+  phrase(arguments(C),
+         "(HO)").
+
+test(arguments5, all(C = [[3]])) :-
+  phrase(arguments(C),
+         "3").
+
 test(command, nondet) :-
   phrase(code_command(C), "211.283 683.997 Td"),
   C = td(211.283, 683.997).
 
 test(command2, all(C = [tf(key("F30"), 9.963)])) :-
   phrase(code_command(C), "/F30 9.963 Tf").
+
+test(command3, all(C = [tf(key("F30"), -9.963)])) :-
+  phrase(code_command(C), "/F30 -9.963 Tf").
+
+test(command4, all(C = [tf(key("F30"))])) :-
+  phrase(code_command(C), "/F30 Tf").
+
+test(command5, all(C = [td(key("F30"), -498)])) :-
+  phrase(code_command(C), "/F30 -498 Td").
+
+test(command6, all(C = [tj([string("HO"), 32, string("W"), -498, string("TO")])])) :-
+  phrase(code_command(C),
+         "[(HO)32(W)-498(TO)]TJ").
+
+
 
 :- end_tests(code).
