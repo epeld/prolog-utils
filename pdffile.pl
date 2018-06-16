@@ -1,5 +1,6 @@
 :- module(pdffile,
           [
+            with_code_stream/3,
             with_file_context/2,
             context_reify_object/3
           ]).
@@ -12,6 +13,32 @@
 :- set_prolog_flag(debugger_write_options,
                    [quoted(true), portray(true), max_depth(30), priority(699)]).
 
+%
+% Calls Goal with a with a Stream argument
+% for reading the PS-code inside the Referenced object
+with_code_stream(Context, Reference, Goal) :-
+  pdffile:context_stream(Context, Stream),
+  pdffile:context_locate_object(Context, Reference),
+
+  find_stream_data_offset(Stream, Offset),
+
+  !,
+  seek(Stream, Offset, bof, Offset),
+  setup_call_cleanup(
+    zopen(
+      Stream, ZStream,
+      [
+        close_parent(false)
+      ]
+    ),
+    call(Goal, ZStream),
+    close(ZStream)
+  ).
+
+
+%
+% Calls Goal with a Context-argument
+% created from the indicated file name
 with_file_context(FileName, Goal) :-
   functor(Goal, _Term, _Arity),
   setup_call_cleanup(
@@ -37,6 +64,22 @@ context_from_stream(Stream, context(Stream, XRef, Trailer)) :-
     Stream
   ),
   !.
+
+
+% Finds the file position (Offset) where the stream data starts,
+% given a Stream positioned just before the whole stream object
+find_stream_data_offset(Stream, Offset) :-
+  find_stream_data_offset(Stream, _Object, Offset).
+
+find_stream_data_offset(Stream, Object, Offset) :-
+  phrase_from_stream(
+    (
+      pdf:stream_object_header(Object),
+      lazy_list_character_count(Offset),
+      pdf:gibberish2
+    ),
+    Stream
+  ).
 
 
 all_objects(Context, Objects) :-
