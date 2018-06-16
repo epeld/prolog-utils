@@ -458,6 +458,11 @@ test(float, all(_X = [_])) :-
          "15.33"),
   F = 15.33.
 
+test(float2, all(_X = [_])) :-
+  phrase(pdf:float(F),
+         "-15.33"),
+  F = -15.33.
+
 
 test(array, all(_X = [_])) :-
   phrase(pdf:array(X),
