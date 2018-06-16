@@ -16,57 +16,25 @@ test_app :-
 
 
 do_something(Context) :-
-  format("Program started~n"),
-  pdffile:context_reify_object(Context, Reference, Object),
-  pdf:object_type(Object, stream),
-
+  stream_reference(Context, Reference),
   !,
-  format("Object ~w has type ~w~n", [Reference, stream]),
+  format("~w~n", Reference),
+  pdffile:with_code_stream(Context, Reference, code_app:print_code).
 
-  with_code_stream(Context, Reference, print_code).
 
+stream_reference(Context, Reference) :-
+  pdffile:context_reify_object(Context, Reference, Object),
+  pdf:object_type(Object, stream).
 
 print_code(ZStream) :-
   phrase_from_stream(everything(Content), ZStream),
 
   !,
-  format("---PDF CODE---~n"),
-  format(Content),
-  format("--------------~n").
+  %format("---PDF CODE---~n"),
+  format(Content)
+  %format("--------------~n")
+.
 
-
-with_code_stream(Context, Reference, Goal) :-
-  pdffile:context_stream(Context, Stream),
-  pdffile:context_locate_object(Context, Reference),
-
-  find_stream_data_offset(Stream, Offset),
-
-  !,
-  seek(Stream, Offset, bof, Offset),
-  setup_call_cleanup(
-    zopen(
-      Stream, ZStream,
-      [
-        close_parent(false)
-      ]
-    ),
-    call(Goal, ZStream),
-    close(ZStream)
-  ).
-
-
-find_stream_data_offset(Stream, Offset) :-
-  find_stream_data_offset(Stream, _Object, Offset).
-
-find_stream_data_offset(Stream, Object, Offset) :-
-  phrase_from_stream(
-    (
-      pdf:stream_object_header(Object),
-      lazy_list_character_count(Offset),
-      pdf:gibberish2
-    ),
-    Stream
-  ).
 
 everything([A | Rest]) --> [A], everything(Rest).
 everything([]) --> [].
