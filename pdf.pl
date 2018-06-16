@@ -99,18 +99,30 @@ skip(N) -->
 %%   ("\n" ; []),
 %%   "endstream".
 
-array(Array) --> "[", optional_whitespace, array_(Array), "]".
+array(Array) -->
+  "[", optional_whitespace, array_(Array), "]".
 
 array_([]) --> [].
 array_([X | Rest]) -->
   array_value(X),
-  array_1(Rest).
+  array_1(Rest, X).
 
-array_1([]) --> optional_whitespace.
-array_1([X | Rest]) -->
-  whitespace,
+array_1([], _) --> optional_whitespace.
+array_1([X | Rest], Previous) -->
+  optional_whitespace(Whitespace),
   array_value(X),
-  array_1(Rest).
+  {
+    valid_whitespace(Previous, Whitespace, X)
+  },
+  array_1(Rest, X).
+
+valid_whitespace(A, false, B) :-
+  (\+ wants_whitespace(A)) ; (\+ wants_whitespace(B)).
+
+valid_whitespace(_A, true, _B).
+
+wants_whitespace(key(_)).
+wants_whitespace(N) :- number(N).
 
 array_value(Value) --> value(Value).
 array_value(N-Symbols) -->
@@ -263,7 +275,11 @@ optional_spaces --> space, optional_spaces.
 optional_spaces --> [].
 
 optional_space --> space ; [].
-optional_whitespace --> whitespace ; [].
+
+optional_whitespace --> whitespace ; []. %optional_whitespace(_).
+
+optional_whitespace(true) --> whitespace.
+optional_whitespace(false) --> [].
 
 whitespace --> " ".
 whitespace --> "\n".
@@ -468,6 +484,17 @@ test(array, all(_X = [_])) :-
   phrase(pdf:array(X),
          "[1 0 3 44.5]"),
   length(X, 4).
+
+test(array2, all(_X = [_])) :-
+  phrase(pdf:array(X),
+         "[ /PDF /Text ]"),
+  length(X, 2).
+
+test(array3, all(_X = [_])) :-
+  phrase(pdf:array(X),
+         "[ /Text ]"),
+  length(X, 1).
+
 
 test(difference_array, nondet) :-
   phrase(pdf:array(_X),
