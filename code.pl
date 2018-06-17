@@ -9,11 +9,15 @@
 
 :- set_prolog_flag(double_quotes, codes).
 
+parse_code(Stream, Commands) :-
+  phrase_from_stream(code:code_block(Commands), Stream).
+
 code_block(Commands) -->
   "BT", pdf:whitespace,
   code_commands(Commands),
   pdf:whitespace,
-  "ET".
+  "ET",
+  pdf:gibberish2.
 
 code_commands([ C | Commands]) -->
   code_command(C),
