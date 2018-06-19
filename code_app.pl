@@ -13,13 +13,19 @@
 test_app :-
   FileName = "/home/erik/Downloads/halmos.pdf",
   Reference = reference(3, 0),
-  Mode = parse,
+  Mode = interpret,
   run(
     Mode,
     FileName,
     Reference
   ).
 
+
+run(interpret, FileName, Reference) :-
+  with_file_context(FileName,
+                    code_app:parse_stream_code(Reference, Commands)),
+  !,
+  interpreter:interpret(Commands).
 
 run(parse, FileName, Reference) :-
   with_file_context(FileName,
