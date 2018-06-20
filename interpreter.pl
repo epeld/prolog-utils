@@ -32,18 +32,25 @@ interpret_command(tj(Args), S0, S) :-
   print(Args, S0, S).
 
 
-maybe_space(X, S0, [space | S0]) :-
-  X < -100.
+maybe_space(X, S0, S) :-
+  X < -100,
+  print_item(string([32]), S0, S).
 
 maybe_space(X, S0, S0) :-
   X >= -100.
 
-print_item(string(Codes), S0, [String | S0]) :-
-  format(string(String), Codes, []).
+
+print_item(String, [Item | S0], [String, Item | S0]) :-
+  Item \= string(_),
+  String = string(_Codes).
+
+print_item(string(Codes), [string(Other) | S0], [string(Joined) | S0]) :-
+  append(Other, Codes, Joined).
 
 print_item(N, S0, S) :-
   number(N),
   maybe_space(N, S0, S).
+
 
 print([A | Args], S0, S) :-
   print_item(A, S0, S1),
