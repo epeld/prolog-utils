@@ -21,8 +21,12 @@ interpret_([C | Rest], State0, State) :-
 interpret_([], State, State).
 
 
-interpret_command(tf(Name, Size), S0, [paragraph(Name, Size) | S0]).
-interpret_command(td(X, Y), S0, [space(X, Y) | S0]).
+interpret_command(tf(Name, Size), S0, [paragraph(Name, Size, default) | S0]).
+
+interpret_command(td(X, Y), [ Item | S0], [space(X, Y), Item | S0]) :- 
+  \+ Item = paragraph(_A, _B, _C).
+
+interpret_command(td(X, Y), [paragraph(A, B, _) | S0], [paragraph(A, B, topleft(X, Y)) | S0]).
 
 interpret_command(tj(Args), S0, S) :-
   print(Args, S0, S).
