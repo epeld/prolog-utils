@@ -3,35 +3,46 @@
 %
 :- module(interpreter, []).
 
-interpret([C | Rest]) :-
-  interpret_command(C),
+interpret(Commands) :-
+  initial_state(State0),
+  interpret_(Commands, State0, State1),
+  reverse(State1, State),
+  format("~w~n", [State]).
+
+
+
+initial_state([]).
+
+interpret_([C | Rest], State0, State) :-
+  interpret_command(C, State0, State1),
   !,
-  interpret(Rest).
+  interpret_(Rest, State1, State).
 
-interpret([]).
-
-interpret_command(tf(Name, Size)) :-
-  format("~n").
-interpret_command(td(X, Y)) :-
-  Y =\= 0 *->
-    format(" ")
-  ;  format(" ").
-interpret_command(tj(Args)) :-
-  print(Args).
+interpret_([], State, State).
 
 
-maybe_space(X) :-
-  X < -100 *-> format(" ") ; true.
+interpret_command(tf(Name, Size), S0, [paragraph(Name, Size) | S0]).
+interpret_command(td(X, Y), S0, [space(X, Y) | S0]).
 
-print_item(string(Codes)) :-
-  format(Codes).
+interpret_command(tj(Args), S0, S) :-
+  print(Args, S0, S).
 
-print_item(N) :-
+
+maybe_space(X, S0, [space | S0]) :-
+  X < -100.
+
+maybe_space(X, S0, S0) :-
+  X >= -100.
+
+print_item(string(Codes), S0, [String | S0]) :-
+  format(string(String), Codes, []).
+
+print_item(N, S0, S) :-
   number(N),
-  maybe_space(N).
+  maybe_space(N, S0, S).
 
-print([A | Args]) :-
-  print_item(A),
-  print(Args).
+print([A | Args], S0, S) :-
+  print_item(A, S0, S1),
+  print(Args, S1, S).
 
-print([]).
+print([], S, S).
