@@ -123,10 +123,15 @@ context_reify_object(Context, Reference, Object) :-
 % Read == Parse out object from pdffile
 %
 context_read_object(Context, Object) :-
+  context_read_object(Context, Object, _Start, _Stop).
+
+context_read_object(Context, Object, Start, Stop) :-
   context_stream(Context, Stream),
   phrase_from_stream(
     (
+      lazy_list_character_count(Start),
       pdf:object(Object),
+      lazy_list_character_count(Stop),
       pdf:remainder
     ),
     Stream),
@@ -158,3 +163,4 @@ find_object_type(Object, Type) :-
     % format("Unkown type for ~w~n", [Object]),
     Type = unknown
   ).
+
