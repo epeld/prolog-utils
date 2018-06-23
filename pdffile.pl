@@ -156,5 +156,5 @@ find_object_type(Object, Type) :-
   once(pdf:object_type(Object, Type)) *-> true
   ; (
     % format("Unkown type for ~w~n", [Object]),
-    Type = unkown
+    Type = unknown
   ).
