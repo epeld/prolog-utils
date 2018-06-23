@@ -17,6 +17,9 @@ gibberish --> [_C], gibberish.
 
 object_dictionary(object(_R, Dictionary, _), Dictionary).
 
+object_type(object(_R, D, none), font_desc) :-
+  member(key("FontFile")-_Path, D).
+
 object_type(object(_R, _, stream(_)), stream).
 
 object_type(object(_R, none, array(_)), array).
@@ -453,6 +456,23 @@ test(object, all(_X = [_])) :-
 /Length 3121
 /Filter /FlateDecode
 >> endobj").
+
+test(object_type, all(_X = [_])) :-
+  phrase(pdf:object(Object),
+         "4 0 obj <<
+/Ascent 694
+/CapHeight 686
+/Descent -194
+/FontName /XFHWXJ+CMBX10
+/ItalicAngle 0
+/StemV 114
+/XHeight 444
+/FontBBox [-301 -250 1164 946]
+/Flags 4
+/CharSet (/A/C/E/H/I/M/O/R/S/T/W)
+/FontFile 5 0 R
+>> endobj"),
+  object_type(Object, font_desc) .
 
 test(array_object, all(_X = [_])) :-
   phrase(pdf:object(object(_R, none, X)),
