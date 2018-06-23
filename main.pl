@@ -19,6 +19,21 @@ run(print, [FileName, Reference]) :-
   ),
   print(FileName, R).
 
+run(list, [FileName]) :-
+  pdffile:with_file_context(FileName,
+                            main:list_objects).
+
+
+list_objects(Context) :-
+  forall(
+    pdffile:context_reify_object(Context, Reference, Object),
+    (
+      pdffile:find_object_type(Object, Type),
+      pdf:codify_reference(Reference, Codes),
+      string_codes(RefString, Codes),
+      format("~w~|~t~w~15+~n", [RefString, Type])
+    )
+  ).
 
 print(FileName, Reference) :-
   catch(
