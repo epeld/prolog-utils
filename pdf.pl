@@ -20,6 +20,9 @@ object_dictionary(object(_R, Dictionary, _), Dictionary).
 object_type(object(_R, D, none), font_desc) :-
   member(key("FontFile")-_Path, D).
 
+object_type(object(_R, D, none), proc_set) :-
+  member(key("ProcSet")-_Array, D).
+
 object_type(object(_R, _, stream(_)), stream).
 
 object_type(object(_R, none, array(_)), array).
@@ -473,6 +476,14 @@ test(object_type, all(_X = [_])) :-
 /FontFile 5 0 R
 >> endobj"),
   object_type(Object, font_desc) .
+
+test(object_type, all(_X = [_])) :-
+  phrase(pdf:object(Object),
+         "23 0 obj <<
+/Font << /F7 18 0 R /F8 12 0 R /F31 15 0 R >>
+/ProcSet [ /PDF /Text ]
+>> endobj"),
+  object_type(Object, proc_set) .
 
 test(array_object, all(_X = [_])) :-
   phrase(pdf:object(object(_R, none, X)),
