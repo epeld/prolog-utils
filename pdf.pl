@@ -3,6 +3,10 @@
 
 :- set_prolog_flag(double_quotes, codes).
 
+parse_reference(String, Reference) :-
+  string_codes(String, Codes),
+  phrase(reference(Reference), Codes).
+
 gibberish2(_A, _B).
 
 gibberish --> [].
