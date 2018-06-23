@@ -23,6 +23,9 @@ object_type(object(_R, D, none), font_desc) :-
 object_type(object(_R, D, none), proc_set) :-
   member(key("ProcSet")-_Array, D).
 
+object_type(object(_R, D, none), meta_info) :-
+  member(key("CreationDate")-_Date, D).
+
 object_type(object(_R, _, stream(_)), stream).
 
 object_type(object(_R, none, array(_)), array).
@@ -477,13 +480,22 @@ test(object_type, all(_X = [_])) :-
 >> endobj"),
   object_type(Object, font_desc) .
 
-test(object_type, all(_X = [_])) :-
+test(object_type2, all(_X = [_])) :-
   phrase(pdf:object(Object),
          "23 0 obj <<
 /Font << /F7 18 0 R /F8 12 0 R /F31 15 0 R >>
 /ProcSet [ /PDF /Text ]
 >> endobj"),
   object_type(Object, proc_set) .
+
+test(object_type3, all(_X = [_])) :-
+  phrase(pdf:object(Object),
+         "133 0 obj <<
+/Producer (MiKTeX pdfTeX-1.20a)
+/Creator (TeX)
+/CreationDate (D:20060115080343-02'00')
+>> endobj"),
+  object_type(Object, meta_info) .
 
 test(array_object, all(_X = [_])) :-
   phrase(pdf:object(object(_R, none, X)),
