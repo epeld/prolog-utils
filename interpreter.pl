@@ -6,9 +6,18 @@
 interpret(Commands) :-
   initial_state(State0),
   interpret_(Commands, State0, State1),
-  reverse(State1, State),
+  reverse(State1, State2),
+  maplist(atomify, State2, State),
   format("~w~n", [State]).
 
+atomify(move(A,B), move(A,B)) :- !.
+
+atomify(string(Codes), String) :- !, format(string(String), Codes, []).
+
+atomify(paragraph(key(Codes), S, _1), paragraph(String, S)) :- !, format(string(String), Codes, []).
+
+atomify(A, Name) :-
+  functor(A, Name, _).
 
 
 initial_state([]).
@@ -23,7 +32,7 @@ interpret_([], State, State).
 
 interpret_command(tf(Name, Size), S0, [paragraph(Name, Size, default) | S0]).
 
-interpret_command(td(X, Y), [ Item | S0], [space(X, Y), Item | S0]) :- 
+interpret_command(td(X, Y), [ Item | S0], [move(X, Y), Item | S0]) :- 
   \+ Item = paragraph(_A, _B, _C).
 
 interpret_command(td(X, Y), [paragraph(A, B, _) | S0], [paragraph(A, B, topleft(X, Y)) | S0]).
