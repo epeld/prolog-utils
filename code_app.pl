@@ -41,7 +41,7 @@ run(print, FileName, Reference) :-
 print_stream_code(Reference, Context) :-
   stream_reference(Context, Reference),
   !,
-  print_reference_line(Reference),
+  % print_reference_line(Reference),
   pdffile:with_code_stream(Context, Reference, code_app:print_code).
 
 
