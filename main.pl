@@ -18,6 +18,8 @@ run(print, Args) :-
   args_reference(Rest0, Reference, Rest1),
   args_empty(Rest1),
   print(FileName, Reference).
+run(help, _Args) :-
+  print_usage.
 
 print(FileName, Reference) :-
   catch(
