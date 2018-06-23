@@ -2,7 +2,8 @@
           [
             with_code_stream/3,
             with_file_context/2,
-            context_reify_object/3
+            context_reify_object/3,
+            find_object_type/2
           ]).
 :- use_module(library(clpfd)).
 :- use_module(pdf).
@@ -146,3 +147,14 @@ context_locate_object(Context, Reference) :-
 %
 context_stream(context(S,_1,_2), S).
 context_xref(context(_1,X,_2), X).
+
+
+%
+% Object Type Predicates
+%
+find_object_type(Object, Type) :-
+  once(pdf:object_type(Object, Type)) *-> true
+  ; (
+    % format("Unkown type for ~w~n", [Object]),
+    Type = unkown
+  ).

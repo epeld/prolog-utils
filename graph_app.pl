@@ -23,7 +23,7 @@ do_something(Context) :-
   forall(
     context_reify_object(Context, Ref, Object),
     (
-      find_object_type(Object, Type),
+      pdffile:find_object_type(Object, Type),
       pretty_reference_with_label(Ref, Type, Pretty, Label),
       format("\"~w\" [ label=\"~w\" ];~n", [ Pretty, Label ])
     )
@@ -70,12 +70,3 @@ pretty_reference_with_label(reference(X,Y), Type, Pretty, Label) :-
   format(string(Pretty), "~w_~w_obj", [X,Y]),
   format(string(Label), "~w_~w_~w", [X,Y,Type]).
 
-%
-% Object Type Predicates
-%
-find_object_type(Object, Type) :-
-  once(pdf:object_type(Object, Type)) *-> true
-  ; (
-    % format("Unkown type for ~w~n", [Object]),
-    Type = unkown
-  ).
