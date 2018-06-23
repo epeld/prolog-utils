@@ -13,13 +13,12 @@ main_with_args(Args) :-
 mode_exists(Mode) :-
   clause(run(Mode, _Args), _Body).
 
-run(print, Args) :-
-  args_filename(Args, FileName, Rest0),
-  args_reference(Rest0, Reference, Rest1),
-  args_empty(Rest1),
-  print(FileName, Reference).
-run(help, _Args) :-
-  print_usage.
+run(print, [FileName, Reference]) :-
+  once(
+    parse_reference(Reference, R)
+  ),
+  print(FileName, R).
+
 
 print(FileName, Reference) :-
   catch(
@@ -35,29 +34,10 @@ print(FileName, Reference) :-
 args_mode([StringMode | Rest], Mode, Rest) :-
   atom_string(Mode, StringMode).
 
-args_filename([FileName | Rest], FileName, Rest) :- !.
-args_filename(_A, _B, _C) :-
-  print_usage, fail.
-
-
-args_reference([ReferenceString | Rest], Reference, Rest) :-
-  !,
-  (
-    pdf:parse_reference(ReferenceString, Reference)
-    *-> !
-  ; ( format_error("Cannot parse ~w~n", [ReferenceString]), fail )
-  ).
-args_reference(_A, _B, _C) :-
-  print_usage, fail.
-
-
-args_empty([]) :- !.
-args_empty(_A) :-
-  print_usage, fail.
 
 
 print_usage :-
-  format_error("Usage: prologpdf <FileName> [<Reference>]~n", []).
+  format_error("Usage: ???~n", []).
 
 
 format_error(Message, Args) :-
