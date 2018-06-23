@@ -6,13 +6,20 @@ main :-
   main_with_args(Args).
 
 main_with_args(Args) :-
+  args_mode(Args, Mode, Args0),
+  mode_exists(Mode),
+  run(Mode, Args0).
+
+mode_exists(Mode) :-
+  clause(run(Mode, _Args), _Body).
+
+run(print, Args) :-
   args_filename(Args, FileName, Rest0),
   args_reference(Rest0, Reference, Rest1),
   args_empty(Rest1),
-  run(FileName, Reference).
+  print(FileName, Reference).
 
-
-run(FileName, Reference) :-
+print(FileName, Reference) :-
   catch(
     code_app:run(print, FileName, Reference),
     Error,
@@ -23,6 +30,8 @@ run(FileName, Reference) :-
   ).
 
 
+args_mode([StringMode | Rest], Mode, Rest) :-
+  atom_string(Mode, StringMode).
 
 args_filename([FileName | Rest], FileName, Rest) :- !.
 args_filename(_A, _B, _C) :-
