@@ -8,7 +8,7 @@ parse_reference(String, Reference) :-
   phrase(reference(Reference), Codes).
 
 codify_reference(reference(A,B), Codes) :-
-  format(codes(Codes), "R ~w ~w", [A,B]).
+  format(codes(Codes), "~w ~w R", [A,B]).
 
 gibberish2(_A, _B).
 
