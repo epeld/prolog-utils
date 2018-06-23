@@ -5,6 +5,7 @@
 :- use_module(graph).
 :- use_module(code).
 :- use_module(interpreter).
+:- use_module(main).
 
 :- use_module(code_app).
 :- use_module(graph_app).
