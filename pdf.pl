@@ -216,11 +216,18 @@ key_value_pairs([Key - Value | Rest]) -->
 
 key(key(Key)) -->
   "/",
+  key_(Key),
+  { Key \= [] }.
+
+
+key_([C | Key]) -->
+  keychar(C),
   key_(Key).
 
-key_(Key, Before, After) :-
-  append(Key, After, Before),
-  maplist(keychar, Key).
+key_([]) --> [].
+
+keychar(C) -->
+  { keychar(C) }, [C].
 
 keychar(C) :-
   digit(C) ; alpha(C) ; member(C, "+-.").
