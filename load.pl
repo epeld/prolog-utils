@@ -11,3 +11,20 @@
 :- use_module(graph_app).
 
 :- example:run_tests.
+
+%
+% Produce the prologpdf command line tool.
+% Note that the new "prologpdf"-process
+%
+% Will be invoked with the same command line
+% flags as your current prolog process
+%
+compile_app :-
+  qsave_program(
+    "prologpdf",
+    [
+      toplevel(main:main),
+      stand_alone(false),
+      map('compile.log')
+    ]
+  ).
