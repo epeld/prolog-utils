@@ -64,6 +64,7 @@ ET
 ```
 
 ## Building
-Load the file *load.pl* inside SWI prolog. You can then call `main` or `main_with_args` inside *main.pl* to run the applications.
+Typing `make` should produce an app called `prologpdf`, provided you have `swipl` installed.
 
-In the future, I will figure out how to actually produce an application that you can run directly.
+### For Development
+The file *load.pl* will load and compile all the source files for you.
