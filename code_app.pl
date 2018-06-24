@@ -70,7 +70,7 @@ print_code(Stream) :-
   phrase_from_stream(everything(Content), Stream),
 
   !,
-  format(Content).
+  format("~s", [Content]).
 
 
 % TODO move elsewhere?

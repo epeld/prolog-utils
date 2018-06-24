@@ -44,7 +44,7 @@ print_raw_object(Reference, Context) :-
     (Codes, pdf:gibberish2),
     Stream
   ),
-  format(Codes).
+  format("~s", [Codes]).
 
 list_objects(Context) :-
   forall(
