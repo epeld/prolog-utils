@@ -1,6 +1,27 @@
 # Welcome to PrologPDF!
 
-PrologPDF provides utilities for working with PDF-files. Currently, it supports:
+PrologPDF provides utilities for (intelligently) extracting text from PDF-files. Prolog is well suited for applying various transformations
+to the extracted PDF-code.
+
+The repo consists of two apps:
+
+## App: pdftext
+Which reads PDF-code and tries to convert it to various text-representations. PDF-code looks something like:
+
+```
+BT
+/F30 9.963 Tf 211.283 683.997
+[..]
+ET
+```
+
+This app is still WIP.
+
+
+## App: prologpdf
+This is a tool for extracting object info from pdf files themselves. It works *very* similar to the *mupdf* utilities.
+
+Currently, it supports:
 
 - Listing objects (and their types) in a PDF-file
 - Printing the characters representing a given PDF-object
@@ -8,10 +29,10 @@ PrologPDF provides utilities for working with PDF-files. Currently, it supports:
 
 In the future PrologPDF will support converting the text of the PDF documents into e.g XML / HTML so that it can be used to generate EPUB-books.
 
-## Example usage
+### Example usage
 Here are some example usages. Note that the examples refer to a *prologpdf* command line tool which will be availabel as soon as I figure out how to make SWI Prolog build it. In the meantime, you can call the predicate `prologpdf` directly inside *prologpdf.pl* and it will behave as the examples.
 
-### Listing pdf objects:
+#### Listing pdf objects:
 ```bash
 prologpdf list my.pdf
 ```
@@ -29,7 +50,7 @@ Example output:
 9 0 R           font
 ```
 
-### Printing a PDF object
+#### Printing a PDF object
 ```bash
 prologpdf raw my.pdf "10 0 R"
 ```
@@ -50,7 +71,7 @@ Example output:
 >> endobj
 ```
 
-### Decoding a PDF stream object
+##### Decoding a PDF stream object
 ```bash
 prologpdf print my.pdf "11 0 R"
 ```
@@ -63,8 +84,8 @@ BT
 ET
 ```
 
-## Building
+### Building
 Typing `make` should produce an app called `prologpdf`, provided you have `swipl` installed.
 
-### For Development
+#### For Development
 The file *load.pl* will load and compile all the source files for you.
