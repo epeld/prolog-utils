@@ -2,7 +2,7 @@
 % :- use_module(main, []).
 
 main :-
-  argv(Args),
+  current_prolog_flag(argv, Args),
   main_with_args(Args).
 
 main_with_args(Args) :-
