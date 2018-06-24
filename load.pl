@@ -24,7 +24,6 @@ compile_app :-
     "prologpdf",
     [
       toplevel(main:main),
-      stand_alone(false),
-      map('compile.log')
+      stand_alone(false)
     ]
   ).
