@@ -23,7 +23,12 @@ compile_app :-
   qsave_program(
     "prologpdf",
     [
-      toplevel(main:main),
+      goal(
+        (
+          main:main,
+          halt
+        )
+      ),
       stand_alone(false)
     ]
   ).
