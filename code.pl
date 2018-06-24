@@ -10,7 +10,9 @@
 :- set_prolog_flag(double_quotes, codes).
 
 parse_code(Stream, Commands) :-
-  phrase_from_stream(code:code_block(Commands), Stream).
+  once(
+    phrase_from_stream(code:code_block(Commands), Stream)
+  ).
 
 code_block(Commands) -->
   "BT", pdf:whitespace,
