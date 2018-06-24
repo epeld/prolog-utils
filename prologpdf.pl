@@ -1,5 +1,5 @@
+
 :- module(prologpdf, []).
-% :- use_module(prologpdf, []).
 
 prologpdf :-
   current_prolog_flag(argv, Args),
