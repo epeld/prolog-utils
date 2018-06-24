@@ -1,11 +1,11 @@
-:- module(main, []).
-% :- use_module(main, []).
+:- module(prologpdf, []).
+% :- use_module(prologpdf, []).
 
-main :-
+prologpdf :-
   current_prolog_flag(argv, Args),
-  main_with_args(Args).
+  prologpdf_with_args(Args).
 
-main_with_args(Args) :-
+prologpdf_with_args(Args) :-
   args_mode(Args, Mode, Args0),
   mode_exists(Mode),
   run(Mode, Args0).
@@ -21,7 +21,7 @@ run(print, [FileName, Reference]) :-
 
 run(list, [FileName]) :-
   pdffile:with_file_context(FileName,
-                            main:list_objects).
+                            prologpdf:list_objects).
 
 
 run(raw, [FileName, Reference]) :-
@@ -29,7 +29,7 @@ run(raw, [FileName, Reference]) :-
     pdf:parse_reference(Reference, R)
   ),
   pdffile:with_file_context(FileName,
-                            main:print_raw_object(R)).
+                            prologpdf:print_raw_object(R)).
 
 
 print_raw_object(Reference, Context) :-

@@ -9,7 +9,7 @@ PrologPDF provides utilities for working with PDF-files. Currently, it supports:
 In the future PrologPDF will support converting the text of the PDF documents into e.g XML / HTML so that it can be used to generate EPUB-books.
 
 ## Example usage
-Here are some example usages. Note that the examples refer to a *prologpdf* command line tool which will be availabel as soon as I figure out how to make SWI Prolog build it. In the meantime, you can call the predicate `main` directly inside *main.pl* and it will behave as the examples.
+Here are some example usages. Note that the examples refer to a *prologpdf* command line tool which will be availabel as soon as I figure out how to make SWI Prolog build it. In the meantime, you can call the predicate `prologpdf` directly inside *prologpdf.pl* and it will behave as the examples.
 
 ### Listing pdf objects:
 ```bash

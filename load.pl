@@ -5,7 +5,7 @@
 :- use_module(graph).
 :- use_module(code).
 :- use_module(interpreter).
-:- use_module(main).
+:- use_module(prologpdf).
 
 :- use_module(code_app).
 :- use_module(graph_app).
@@ -25,7 +25,7 @@ compile_app :-
     [
       goal(
         (
-          main:main,
+          prologpdf:prologpdf,
           halt
         )
       ),
