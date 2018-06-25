@@ -68,8 +68,6 @@ atomify(move(A,B), move(A,B)) :- !.
 
 atomify(string(Codes), string(String)) :- !, format(string(String), Codes, []).
 
-atomify(font(key(Codes), S, _1), font(String, S)) :- !, format(string(String), Codes, []).
-
 
 atomify(A, A) :- !.
 atomify(A, Name) :-
