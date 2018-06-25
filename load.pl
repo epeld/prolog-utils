@@ -7,6 +7,7 @@
 :- use_module(interpreter).
 :- use_module(prologpdf).
 :- use_module(pdftext).
+:- use_module(transform).
 
 :- use_module(code_app).
 :- use_module(graph_app).
