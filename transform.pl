@@ -21,6 +21,23 @@ transform(Commands, CommandsOut) :-
   State = CommandsOut.
 
 
+group_by_font([], []).
+group_by_font([font(A,B,C) | Rest], [font(A,B,C)-Items | Out]) :-
+  non_font_items(Rest, Items, Tail),
+  group_by_font(Tail, Out).
+
+
+non_font_items([], [], []).
+non_font_items([Item | Items], [Item | NonFontItems], Rest) :-
+  not_font(Item),
+  !,
+  non_font_items(Items, NonFontItems, Rest).
+
+non_font_items([font(A, B,C) | Items], [], [font(A, B,C) | Items]).
+
+not_font(Item) :-
+  Item \= font(_A, _B, _C).
+
 
 join_strings([string(A), string(B) | Rest0], Rest) :-
   !,
