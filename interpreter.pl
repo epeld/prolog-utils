@@ -6,16 +6,10 @@
 :- module(interpreter, []).
 :- use_module(transform, [transform/2]).
 
-interpret(Commands, Stream) :-
+interpret(Commands, CommandsOut) :-
   initial_state(State0),
-  !,
   interpret_(Commands, State0, State1),
-  !,
-  format("Done interpreting~n"),
-  transform(State1, State),
-  format("Writing to file~n"),
-  format(Stream, "~w~n", [State]),
-  format("Done~n").
+  transform(State1, CommandsOut).
 
 
 

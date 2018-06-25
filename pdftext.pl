@@ -16,11 +16,16 @@ pdftext :-
 
 pdftext(Input) :-
   code:parse_code(Input, Commands),
+  interpreter:interpret(Commands, CommandsOut),
+  !,
   with_open_file("/tmp/out.txt", write, [],
-                 interpreter:interpret(Commands)),
+                write_commands(CommandsOut)),
+
   !.
 
 
+write_commands(Commands, Stream) :-
+  format(Stream, "~w", [Commands]).
 
 pdftext_from_testfile :-
   pdftext_from_file("samples/code.txt").
