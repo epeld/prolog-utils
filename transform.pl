@@ -13,12 +13,26 @@ transform(Commands, Commands) :-
 
 transform(Commands, CommandsOut) :-
   State1 = Commands,
-  reverse(State1, State2),
-  remove_header(State2, State3),
+  reverse(State1, State2_0),
+
+  State2_0 = State3,
+
+  % only body needs paragraph detection
   detect_new_paragaph(State3, State4_0),
   join_strings(State4_0, State4),
+
+  % only body really
   maplist(atomify, State4, State),
-  State = CommandsOut.
+
+  group_by_font(State, CommandsOut0),
+  maplist(identify_by_font, CommandsOut0, CommandsOut).
+
+
+identify_by_font(font(_Name, 9.963, _Pos)-Elements,
+                 body(Elements)).
+
+identify_by_font(font(_Name, 6.974, _Pos)-Elements,
+                 trailer_footer(Elements)).
 
 
 group_by_font([], []).
@@ -49,8 +63,6 @@ join_strings([A | Rest0], [A | Rest]) :-
 
 join_strings([], []).
 
-remove_header([font(_A, Size, _C), string(_Blabla) | State], State) :-
-  very_close(Size, 6.974).
 
 detect_new_paragaph([move(X, Y) | Rest0], Rest) :-
   very_close(X, 11.956),
