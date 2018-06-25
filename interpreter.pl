@@ -1,5 +1,7 @@
 %
-% This module tries to interpret pdf ps code
+% This module tries to 'interpret' pdf ps code
+% which means, we try to convert the pdf commands to something
+% a bit more human-readable
 %
 :- module(interpreter, []).
 :- use_module(transform, [transform/2]).
