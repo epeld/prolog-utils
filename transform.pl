@@ -6,11 +6,6 @@
    ).
 
 
-transform(Commands, Commands) :-
-  false, 
-  !.
-
-
 transform(Commands, CommandsOut) :-
   State1 = Commands,
   reverse(State1, State2_0),
