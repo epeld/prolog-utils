@@ -7,22 +7,31 @@
 
 
 transform(Commands, CommandsOut) :-
-  State1 = Commands,
-  reverse(State1, State2_0),
+  reverse(Commands, Commands0),
 
-  State2_0 = State3,
-
-  % only body needs paragraph detection
-  detect_new_paragaph(State3, State4_0),
-  join_strings(State4_0, State4),
-
-  % only body really
-  maplist(prettify, State4, State),
-
-  group_by_font(State, CommandsOut0),
-  maplist(identify_by_font, CommandsOut0, CommandsOut).
+  group_by_font(Commands0, CommandsOut0),
+  maplist(identify_by_font, CommandsOut0, CommandsOut1),
+  maplist(transform_element_once, CommandsOut1, CommandsOut).
 
 
+%
+% Transformation Rules
+%
+transform_element_once(A, B) :- once(transform_element(A,B)).
+
+transform_element(trailer_footer(_Elements), removed).
+
+transform_element(body(Elements), body(Out)) :-
+  detect_new_paragaph(Elements, Elements1),
+  join_strings(Elements1, Elements2),
+  maplist(prettify, Elements2, Out).
+
+transform_element(El, El).
+
+
+%
+% Identification Rules
+%
 identify_by_font(font(_Name, 9.963, _Pos)-Elements,
                  body(Elements)).
 
@@ -30,6 +39,9 @@ identify_by_font(font(_Name, 6.974, _Pos)-Elements,
                  trailer_footer(Elements)).
 
 
+%
+%
+%
 group_by_font([], []).
 group_by_font([font(A,B,C) | Rest], [font(A,B,C)-Items | Out]) :-
   non_font_items(Rest, Items, Tail),
