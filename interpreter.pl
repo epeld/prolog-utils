@@ -26,7 +26,7 @@ join_strings([A | Rest0], [A | Rest]) :-
 
 join_strings([], []).
 
-remove_header([paragraph(_A, Size, _C), string(_Blabla) | State], State) :-
+remove_header([font(_A, Size, _C), string(_Blabla) | State], State) :-
   very_close(Size, 6.974).
 
 detect_new_paragaph([move(X, Y) | Rest0], Rest) :-
@@ -68,7 +68,7 @@ atomify(move(A,B), move(A,B)) :- !.
 
 atomify(string(Codes), string(String)) :- !, format(string(String), Codes, []).
 
-atomify(paragraph(key(Codes), S, _1), paragraph(String, S)) :- !, format(string(String), Codes, []).
+atomify(font(key(Codes), S, _1), font(String, S)) :- !, format(string(String), Codes, []).
 
 
 atomify(A, A) :- !.
@@ -86,12 +86,12 @@ interpret_([C | Rest], State0, State) :-
 interpret_([], State, State).
 
 
-interpret_command(tf(Name, Size), S0, [paragraph(Name, Size, default) | S0]).
+interpret_command(tf(Name, Size), S0, [font(Name, Size, default) | S0]).
 
 interpret_command(td(X, Y), [ Item | S0], [move(X, Y), Item | S0]) :- 
-  \+ Item = paragraph(_A, _B, _C).
+  \+ Item = font(_A, _B, _C).
 
-interpret_command(td(X, Y), [paragraph(A, B, _) | S0], [paragraph(A, B, topleft(X, Y)) | S0]).
+interpret_command(td(X, Y), [font(A, B, _) | S0], [font(A, B, topleft(X, Y)) | S0]).
 
 interpret_command(tj(Args), S0, S) :-
   print(Args, S0, S).
