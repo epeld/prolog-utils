@@ -22,7 +22,7 @@ transform(Commands, CommandsOut) :-
   join_strings(State4_0, State4),
 
   % only body really
-  maplist(atomify, State4, State),
+  maplist(prettify, State4, State),
 
   group_by_font(State, CommandsOut0),
   maplist(identify_by_font, CommandsOut0, CommandsOut).
@@ -99,11 +99,11 @@ very_close_abs(A, B) :-
   very_close(A, B) ; very_close(B, A).
 
 
-atomify(move(A,B), move(A,B)) :- !.
+prettify(move(A,B), move(A,B)) :- !.
 
-atomify(string(Codes), string(String)) :- !, format(string(String), Codes, []).
+prettify(string(Codes), string(String)) :- !, format(string(String), Codes, []).
 
 
-atomify(A, A) :- !.
-atomify(A, Name) :-
+prettify(A, A) :- !.
+prettify(A, Name) :-
   functor(A, Name, _).
